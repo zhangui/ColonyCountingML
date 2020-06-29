@@ -11,7 +11,7 @@ import csv
 import shutil
 
 # Arguments Format:
-#     python.py drawColony.py `path to generate data at` `number of images for training` `number of images for validation`
+#     python.py generate.py `path to generate data at` `number of images for training` `number of images for validation`
 
 num_of_param = len(sys.argv) - 1
 if num_of_param < 3:
