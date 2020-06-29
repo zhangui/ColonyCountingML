@@ -1,2 +1,3 @@
-# ignore any save files
+# ignore save files and .pyc's
 *~
+.pyc
