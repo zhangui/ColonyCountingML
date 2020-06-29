@@ -23,7 +23,7 @@ class get_image_folder(torch.utils.data.Dataset):
         if len(self.label[index]) != 2:
             raise RuntimeError('The ' + str(i) + '\'th entry of labels.csv does not have exactly 2 columns')
 
-        raw_data = Image.open('/'.join((self.total_path, self.label[index][0])))
+        raw_data = Image.open(self.label[index][0])
         resized_img = raw_data.resize(self.img_dim)
         img = torchvision.transforms.ToTensor().__call__(resized_img)
 

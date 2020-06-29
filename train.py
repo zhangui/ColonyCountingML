@@ -60,11 +60,11 @@ def check_subdir(path, subdir):
         print('Error: Data path has no subdirectory "' + subdir + '"')
         exit()
 
-    if len(os.listdir('/'.join([data_path, subdir]))) == 0:
+    if len(os.listdir(os.path.join(data_path, subdir))) == 0:
         print('Error: Data path\'s subdirectory "' + subdir + '" is empty')
         exit()
 
-    if not os.path.isfile('/'.join((data_path, subdir, 'labels.csv'))):
+    if not os.path.isfile(os.path.join(data_path, subdir, 'labels.csv')):
         print('Error: Data path\'s subdirectory "' + subdir + '" has no labels file')
         exit()
 
