@@ -1,12 +1,18 @@
-# TODO: Write get_data
 # TODO: Tune parameters, model, and loss function
 # TODO: Check for bugs
+# TODO: Check each image group has labels.txt
+# TODO: Add img_dim as a possible shell argument
+# TODO: Add batch_size as a possible shell argument
 
 from model import Net
+from preprocess import get_loader
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
+import torchvision
 
 import sys
 import os.path
@@ -26,7 +32,7 @@ if num_of_param < 2:
     exit()
 
 # Default Values
-epochs = 100
+epochs = 5
 lr = .001
 momentum = .9
 
@@ -51,27 +57,29 @@ if not os.path.isdir(data_path):
 def check_subdir(path, subdir):
     data_path_contents = os.listdir(data_path)
     if subdir  not in data_path_contents:
-        print('Error: Data path has no subdirectory ' + subdir)
+        print('Error: Data path has no subdirectory "' + subdir + '"')
         exit()
 
     if len(os.listdir('/'.join([data_path, subdir]))) == 0:
-        print('Error: Data path\'s subdirectory ' + subdir + ' is empty')
+        print('Error: Data path\'s subdirectory "' + subdir + '" is empty')
         exit()
+
+    if not os.path.isfile('/'.join((data_path, subdir, 'labels.csv'))):
+        print('Error: Data path\'s subdirectory "' + subdir + '" has no labels file')
+        exit()
+
     
 check_subdir(data_path, 'train')
 check_subdir(data_path, 'validate')
 
-#TODO: Implement get_data()
-def get_data(data_path, subdir):
-    total_path = '/'.join(data_path, subdir)
-    # TODO: Use total_path to get data
-    raise NotImplementedException
+img_dim = (50, 50)
+batch_size = 1
 
-train_data = get_data(data_path, 'train')
-test_data  = get_data(data_path, 'validate')
+train_data = get_loader(data_path, 'train', img_dim, batch_size, shuffle=True)
+test_data  = get_loader(data_path, 'validate', img_dim, batch_size, shuffle=False)
 
 # Training
-net = Net()
+net = Net(batch_size)
 criterion = nn.MSELoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
@@ -87,10 +95,11 @@ for epoch in range(epochs):
         images, num_of_colonies = data
             
         optimizer.zero_grad() 
-        outputs = net(images)
+        outputs = net(images).double()
         loss = criterion(outputs, num_of_colonies)
         loss.backward()
         optimizer.step()
+    print(epoch)
 
 # Save
 torch.save(net.state_dict(), network_path)
@@ -103,4 +112,5 @@ for i, data in enumerate(train_data, 0):
     optimizer.zero_grad() 
     outputs = net(images)
     loss += criterion(outputs, num_of_colonies)
+
 print('Loss: ' + str(loss))
