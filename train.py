@@ -18,7 +18,7 @@ import sys
 import os.path
 
 # Arguments Format:
-#     python.py train.py `network path` `data` [epochs] [learning rate] [momentum]
+#     python.py train.py `network path` `data` [epochs] [learning rate] [batch size] [momentum]
 # This command will load, if it exists, an exists neural network
 # from `network path`, and create it otherwise. It will train from data in the folder
 # `data` (there should be two folders in here: train and validation). Optionally,
@@ -34,6 +34,7 @@ if num_of_param < 2:
 # Default Values
 epochs = 5
 lr = .001
+batch_size = 25
 momentum = .9
 
 # Parse data
@@ -41,14 +42,23 @@ network_path = sys.argv[1]
 data_path = sys.argv[2]
 
 if 2 < num_of_param:
-    epochs = sys.argv[3]
+    epochs = int(sys.argv[3])
 
 if 3 < num_of_param:
-    lr = sys.argv[3]
+    lr = float(sys.argv[4])
     
 if 4 < num_of_param:
-    momentum = sys.argv[3]
-    
+    batch_size = int(sys.argv[5])
+
+if 5 < num_of_param:
+    momentum = float(sys.argv[6])
+
+print('Epochs: {epochs}'.format(epochs = epochs))
+print('Learning Rate: {lr}'.format(lr = lr))
+print('Batch Size: {batch_size}'.format(batch_size = batch_size))
+print('Momentum: {momentum}'.format(momentum = momentum))
+print(' ')
+
 # Check if data path exists and its contents is correctly formatted
 if not os.path.isdir(data_path):
     print('Error: Data path is not a directory')
@@ -73,7 +83,6 @@ check_subdir(data_path, 'train')
 check_subdir(data_path, 'validate')
 
 img_dim = (50, 50)
-batch_size = 1
 
 train_data = get_loader(data_path, 'train', img_dim, batch_size, shuffle=True)
 test_data  = get_loader(data_path, 'validate', img_dim, batch_size, shuffle=False)
@@ -99,7 +108,18 @@ for epoch in range(epochs):
         loss = criterion(outputs, num_of_colonies)
         loss.backward()
         optimizer.step()
-    print(epoch)
+
+    if epoch % 10 == 1:
+        test_loss = 0
+        for i, data in enumerate(train_data, 0):
+            images, num_of_colonies = data
+            
+            optimizer.zero_grad() 
+            outputs = net(images)
+            test_loss += criterion(outputs, num_of_colonies)
+
+        print('Epoch', epoch)
+        print('Loss', test_loss.item())
 
 # Save
 torch.save(net.state_dict(), network_path)
@@ -111,6 +131,7 @@ for i, data in enumerate(train_data, 0):
             
     optimizer.zero_grad() 
     outputs = net(images)
+    print(i, outputs, num_of_colonies)
     loss += criterion(outputs, num_of_colonies)
 
 print('Loss: ' + str(loss))

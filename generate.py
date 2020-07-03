@@ -11,7 +11,7 @@ import csv
 import shutil
 
 # Arguments Format:
-#     python.py generate.py `path to generate data at` `number of images for training` `number of images for validation`
+#     python generate.py `path to generate data at` `number of images for training` `number of images for validation`
 
 num_of_param = len(sys.argv) - 1
 if num_of_param < 3:
@@ -32,14 +32,9 @@ xsize = 1520
 ysize = 1520
 edge_width = 30
 margin_width = 20
-img = Image.new('RGB', (xsize, ysize), color = (255, 255, 255))
 petri_radius = (xsize - 2 * margin_width)/2
 petri_centerx = xsize / 2
 petri_centery = ysize / 2
-
-draw = ImageDraw.Draw(img)
-draw.ellipse((margin_width, margin_width, xsize - margin_width, ysize - margin_width), fill = 'white', outline ='black')
-draw.ellipse((margin_width + edge_width, margin_width + edge_width, xsize - margin_width - edge_width, ysize - margin_width - edge_width), fill = 'white', outline ='black')
 
 
 base_dir = sys.argv[1]
@@ -78,6 +73,13 @@ for dataset_size_index, cur_dir in enumerate(cur_dirs, 0):
 
     print('Populating ' + cur_dir + '...')
     for index in range(dataset_size[dataset_size_index]):
+        img = Image.new('RGB', (xsize, ysize), color = (255, 255, 255))
+
+        draw = ImageDraw.Draw(img)
+        draw.ellipse((margin_width, margin_width, xsize - margin_width, ysize - margin_width), fill = 'white', outline ='black')
+        draw.ellipse((margin_width + edge_width, margin_width + edge_width, xsize - margin_width - edge_width, ysize - margin_width - edge_width), fill = 'white', outline ='black')
+
+
         colony_count = np.random.randint(1, 100)
         colony_counts.append(colony_count)
 

@@ -1,6 +1,7 @@
 # TODO: change `conv1` to only have a 1 channel input (i.e. Grayscale)
 # TODO: Test if pooling or dropout performs better
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -14,9 +15,7 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.pool = nn.MaxPool2d(2, 2)
         
-        self.fc1 = nn.Linear(16 * 9 * 9, 128)
-        self.fc2 = nn.Linear(128, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc1 = nn.Linear(16 * 9 * 9, 1)
 
     def forward(self, x):
         #print(x.size())
@@ -26,7 +25,9 @@ class Net(nn.Module):
         #print(x.size())
         x = x.view(self.batch_size, -1)
         #print(x.size())
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+        #x = F.relu(self.fc1(x))
+        #x = F.relu(self.fc2(x))
+        #x = self.fc3(x)
+
+        x = self.fc1(x)
+        return torch.squeeze(x)
