@@ -53,7 +53,7 @@ if len(os.listdir(data_path)) == 0:
 
 img_dim = (50, 50)
 
-test_data  = get_loader(data_path, '.', img_dim, batch_size, shuffle=False, train=False)
+test_data, _, _  = get_loader(data_path, '.', img_dim, batch_size, shuffle=False, train=False)
 #print(test_data.label)
 #test_data[0]
 
@@ -77,4 +77,6 @@ for i, images in enumerate(test_data, 0):
     #num_of_colonies = (num_of_colonies - mean) / std
 
     #print(i, torch.round(outputs * std + mean))
-    print(i, torch.round(outputs).item())
+    mean = 49.905
+    std = 28.6526
+    print(i, torch.round(outputs * std + mean).item())

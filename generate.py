@@ -167,8 +167,8 @@ for dataset_size_index, cur_dir in enumerate(cur_dirs, 0):
                               fill = (fill_color, fill_color, fill_color, fill_color))
 
 
-        blur_radius = max(0, np.random.randint(-2,5))
-        img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+        #blur_radius = max(0, np.random.randint(-2,5))
+        #img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
         # Save image
         img.save(make_filename(base_dir, cur_dir, file_basename, index, file_ext))
 

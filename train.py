@@ -86,8 +86,14 @@ check_subdir(data_path, 'validate')
 
 img_dim = (50, 50)
 
-train_data = get_loader(data_path, 'train', img_dim, batch_size, shuffle=True)
-#test_data  = get_loader(data_path, 'validate', img_dim, batch_size, shuffle=False)
+train_data, mean, std = get_loader(data_path, 'train', img_dim, batch_size, shuffle=True)
+test_data, _, _ = get_loader(data_path, 'validate', img_dim, batch_size, shuffle=False)
+
+mean = 49.905
+std = 28.6526
+
+print('Mean', mean)
+print('Std', std)
 
 # Training
 net = Net(batch_size)
@@ -109,7 +115,7 @@ for epoch in range(epochs):
         
         # --- TESTING ---
         # Normalize
-        num_of_colonies = (num_of_colonies - torch.mean(num_of_colonies)) / torch.std(num_of_colonies)
+        num_of_colonies = (num_of_colonies - mean) / std
         # --- END TESTING ---
 
         optimizer.zero_grad() 
@@ -125,26 +131,23 @@ for epoch in range(epochs):
         
 
 
+
 # Save
 torch.save(net.state_dict(), network_path)
 
 print('here')
 # And validate
 loss = 0
-# for i, data in enumerate(test_data, 0):
-#     images, num_of_colonies = data
+for i, data in enumerate(test_data, 0):
+    images, num_of_colonies = data
             
-#     mean = torch.mean(num_of_colonies)
-#     std = torch.std(num_of_colonies)
-#     # --- TESTING ---
-#     # Normalize
-#     num_of_colonies = (num_of_colonies - mean) / std
-#     # --- END TESTING ---
+    # --- TESTING ---
+    # Normalize
+    num_of_colonies = (num_of_colonies - mean) / std
+    # --- END TESTING ---
 
-#     optimizer.zero_grad() 
-#     outputs = net(images)
-#     print(i, torch.round(outputs * std + mean))
-#     print(i, num_of_colonies * std + mean)
-#     loss += criterion(outputs, num_of_colonies)
-
-# print('Loss: ' + str(loss))
+    optimizer.zero_grad() 
+    outputs = net(images)
+    print(i, torch.round(outputs * std + mean))
+    print(i, num_of_colonies * std + mean)
+    loss += criterion(outputs, num_of_colonies)
