@@ -17,6 +17,8 @@ import torchvision
 import sys
 import os.path
 
+import operator
+
 # Arguments Format:
 #     python.py train.py `network path` `data` [epochs] [learning rate] [batch size] [momentum]
 # This command will load, if it exists, an exists neural network
@@ -39,7 +41,7 @@ momentum = .9
 
 # Parse data
 network_path = sys.argv[1]
-data_path = sys.argv[2]
+data_path = os.path.join(sys.argv[2], 'data')
 
 if 2 < num_of_param:
     epochs = int(sys.argv[3])
@@ -85,7 +87,7 @@ check_subdir(data_path, 'validate')
 img_dim = (50, 50)
 
 train_data = get_loader(data_path, 'train', img_dim, batch_size, shuffle=True)
-test_data  = get_loader(data_path, 'validate', img_dim, batch_size, shuffle=False)
+#test_data  = get_loader(data_path, 'validate', img_dim, batch_size, shuffle=False)
 
 # Training
 net = Net(batch_size)
@@ -97,41 +99,52 @@ if os.path.isfile(network_path):
     print('Loading network at ' + network_path +  '...')
     net.load_state_dict(torch.load(network_path))
 
+loss_sum = 0
+
 # Then we train
 print('Training network...')
 for epoch in range(epochs):
     for i, data in enumerate(train_data, 0):
         images, num_of_colonies = data
-            
+        
+        # --- TESTING ---
+        # Normalize
+        num_of_colonies = (num_of_colonies - torch.mean(num_of_colonies)) / torch.std(num_of_colonies)
+        # --- END TESTING ---
+
         optimizer.zero_grad() 
         outputs = net(images).double()
         loss = criterion(outputs, num_of_colonies)
         loss.backward()
         optimizer.step()
 
-    if epoch % 10 == 1:
-        test_loss = 0
-        for i, data in enumerate(train_data, 0):
-            images, num_of_colonies = data
-            
-            optimizer.zero_grad() 
-            outputs = net(images)
-            test_loss += criterion(outputs, num_of_colonies)
+        loss_sum += loss
+    #print('epochs', epoch)
+    print(loss_sum.item())
+    loss_sum = 0
+        
 
-        print('Epoch', epoch)
-        print('Loss', test_loss.item())
 
 # Save
 torch.save(net.state_dict(), network_path)
 
+print('here')
 # And validate
 loss = 0
-for i, data in enumerate(train_data, 0):
-    images, num_of_colonies = data
+# for i, data in enumerate(test_data, 0):
+#     images, num_of_colonies = data
             
-    optimizer.zero_grad() 
-    outputs = net(images)
-    print(i, outputs, num_of_colonies)
-    loss += criterion(outputs, num_of_colonies)
+#     mean = torch.mean(num_of_colonies)
+#     std = torch.std(num_of_colonies)
+#     # --- TESTING ---
+#     # Normalize
+#     num_of_colonies = (num_of_colonies - mean) / std
+#     # --- END TESTING ---
 
-print('Loss: ' + str(loss))
+#     optimizer.zero_grad() 
+#     outputs = net(images)
+#     print(i, torch.round(outputs * std + mean))
+#     print(i, num_of_colonies * std + mean)
+#     loss += criterion(outputs, num_of_colonies)
+
+# print('Loss: ' + str(loss))

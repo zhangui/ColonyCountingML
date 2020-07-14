@@ -1,7 +1,7 @@
 # TODO: change ellipse position to be random (within boundaries)
 # TODO: add a random 3d change-perspective operation
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 
 import os
@@ -27,6 +27,9 @@ def circle_contains(bigx, bigy, bigrad, smallx, smally, smallrad):
     if (bigrad > smallrad + d):
         return True
     return False
+
+def clip(color):
+    return max(0, min(255, color))
 
 xsize = 1520
 ysize = 1520
@@ -73,36 +76,99 @@ for dataset_size_index, cur_dir in enumerate(cur_dirs, 0):
 
     print('Populating ' + cur_dir + '...')
     for index in range(dataset_size[dataset_size_index]):
-        img = Image.new('RGB', (xsize, ysize), color = (255, 255, 255))
+        choose = np.random.randint(0, 2)
+
+
+        bg_color = choose * np.random.randint(0, 20) + (1 - choose) * np.random.randint(250, 256)
+        fg_color = choose * np.random.randint(236, 256) + (1 - choose) * np.random.randint(0, 20)
+
+
+        #img = Image.new('RGB', (xsize, ysize), color = (255, 255, 255))
+        img = Image.new('RGB', (xsize, ysize), color = (bg_color, bg_color, bg_color))
 
         draw = ImageDraw.Draw(img)
-        draw.ellipse((margin_width, margin_width, xsize - margin_width, ysize - margin_width), fill = 'white', outline ='black')
-        draw.ellipse((margin_width + edge_width, margin_width + edge_width, xsize - margin_width - edge_width, ysize - margin_width - edge_width), fill = 'white', outline ='black')
 
 
+        
+        #epsilon = np.random.randint(-20, 20)
+        #fill_color1 = clip(fg_color + epsilon)
+
+        #epsilon = np.random.randint(-20, 20)
+        #fill_color2 = clip(bg_color + epsilon)
+
+        e1 = np.random.randint(-35, 35)
+        e2 = np.random.randint(-35, 35) 
+        e3 = np.random.randint(-35, 35)
+        e4 = np.random.randint(-35, 35)
+
+
+        # *** UNCOMMENT AFTER TEST ***
+        #draw.ellipse((margin_width + e1, margin_width + e2, xsize - margin_width + e3, ysize - margin_width + e4), fill = (fill_color1, fill_color1, fill_color1, fill_color1),
+        #             outline =(fill_color1, fill_color1, fill_color1, fill_color1))
+        #draw.ellipse((margin_width + edge_width + e1, margin_width + edge_width + e2, xsize - margin_width - edge_width + e3, ysize - margin_width - edge_width + e4),
+        #             fill = (fill_color2, fill_color2, fill_color2, fill_color2),
+        #             outline = (fill_color2, fill_color2, fill_color2, fill_color2))
+
+        margin_width + edge_width + e1, margin_width + edge_width + e2, xsize - margin_width - edge_width + e3, ysize - margin_width - edge_width + e4
+        petri_radius = (xsize - 2 * margin_width)/2
+        petri_centerx = xsize / 2 
+        petri_centery = ysize / 2
+
+        # *** UNCOMMENT END ***
+
+        # *** TEST ***
         colony_count = np.random.randint(1, 100)
+        radius_sigma = 5
+        radius_mu = (np.random.randint(5, 10) * int(300)) / int(max(colony_count, 100)) # old value: 10
+        # *** TEST END ***
+
         colony_counts.append(colony_count)
 
-        radius_sigma = 1
-        radius_mu = 8
 
 
         for i in range(0, colony_count):
-            colony_radius = np.random.normal(radius_mu, radius_sigma) # radius is normally distribution
+            colony_radius_x = np.random.normal(radius_mu, radius_sigma) # radius is normally distribution
+            colony_radius_y = np.random.normal(radius_mu, radius_sigma) # radius is normally distribution
             colony_x = np.random.randint(margin_width, xsize - margin_width)
             colony_y = np.random.randint(margin_width, ysize - margin_width)
             while (circle_contains(petri_centerx, petri_centery, petri_radius,
-                                   colony_x, colony_y, colony_radius) == False):
+                                   colony_x, colony_y, max(colony_radius_x, colony_radius_y)) == False):
                 colony_radius = np.random.normal(radius_mu, radius_sigma)
                 colony_x = np.random.randint(margin_width, xsize - margin_width)
                 colony_y = np.random.randint(margin_width, ysize - margin_width)
-            x1 = colony_x - colony_radius
-            y1 = colony_y - colony_radius
-            x2 = colony_x + colony_radius
-            y2 = colony_y + colony_radius
-            draw.ellipse((x1, y1, x2, y2), fill = 'black', outline ='black')
-    
+            x1 = colony_x - colony_radius_x
+            y1 = colony_y - colony_radius_y
+            x2 = colony_x + colony_radius_x
+            y2 = colony_y + colony_radius_y
 
+            epsilon = np.random.randint(-30, 30)
+
+            fill_color = clip(fg_color + epsilon)
+            draw.ellipse((x1, y1, x2, y2), fill = (fill_color, fill_color, fill_color) , outline = (fill_color, fill_color, fill_color))
+    
+            # Add random shapes
+            if np.random.randint(0, 10) == 1:
+                # Draw random point
+                for j in range(np.random.randint(0, 20)):
+                    x1 = np.random.randint(margin_width, xsize - margin_width)
+                    y1 = np.random.randint(margin_width, ysize - margin_width)
+                    x2 = x1 + np.random.randint(1, 15)
+                    y2 = y1 + np.random.randint(1, 15)
+                    draw.ellipse([x1, y1, x2, y2],
+                               fill = (fill_color, fill_color, fill_color, fill_color))
+                # Draw random line
+                for j in range(np.random.randint(0, 5)):
+                    x1 = np.random.randint(0, xsize)
+                    y1 = np.random.randint(0, ysize)
+                    x2 = np.random.randint(-100, 100) + x1
+                    y2 = np.random.randint(-100, 100) + y1
+
+                    draw.line([x1, y1, x2, y2], width = np.random.randint(0, 5),
+                              fill = (fill_color, fill_color, fill_color, fill_color))
+
+
+        blur_radius = max(0, np.random.randint(-2,5))
+        img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
         # Save image
         img.save(make_filename(base_dir, cur_dir, file_basename, index, file_ext))
 
