@@ -57,4 +57,5 @@ plt.yticks(pos, ['kmeans', 'CNN'])
 plt.title('Feature Importance (MDI)')
 plt.show()
 
-yhat = model.predict([0.5, 0.5])
+yhat = reg.predict([[0.5, 0.5],[0.5,0.5]])
+print(yhat)
